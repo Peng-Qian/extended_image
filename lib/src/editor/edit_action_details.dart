@@ -7,6 +7,7 @@ import 'package:vector_math/vector_math_64.dart';
 class EditActionDetails {
   EditorConfig? config;
   Rect? _layoutRect;
+
   Rect? get layoutRect => _layoutRect;
   Rect? _screenDestinationRect;
   Rect? _rawDestinationRect;
@@ -51,13 +52,26 @@ class EditActionDetails {
   }
 
   double _rotateRadians = 0.0;
+
   double get rotateRadians => _rotateRadians;
+
   set rotateRadians(double value) {
     // ingore precisionErrorTolerance
     if (value != 0.0 && value.isZero) {
       value = 0.0;
     }
     _rotateRadians = value;
+  }
+
+  double _rectRotateRadians = 0.0;
+
+  double get rectRotateRadians => _rectRotateRadians;
+
+  set rectRotateRadians(double value) {
+    if (value != 0.0 && value.isZero) {
+      value = 0.0;
+    }
+    _rectRotateRadians = value;
   }
 
   double rotationYRadians = 0.0;
@@ -81,8 +95,7 @@ class EditActionDetails {
   bool get isTwoPi => (rotateRadians % (2 * pi)) == 0;
 
   /// destination rect base on layer
-  Rect? get layerDestinationRect =>
-      screenDestinationRect?.shift(-layoutTopLeft!);
+  Rect? get layerDestinationRect => screenDestinationRect?.shift(-layoutTopLeft!);
 
   Offset? get layoutTopLeft => _layoutRect?.topLeft;
 
@@ -119,21 +132,13 @@ class EditActionDetails {
         Offset focalPoint = screenFocalPoint ?? _screenDestinationRect!.center;
 
         focalPoint = Offset(
-          focalPoint.dx
-              .clamp(
-                  _screenDestinationRect!.left, _screenDestinationRect!.right)
-              .toDouble(),
-          focalPoint.dy
-              .clamp(
-                  _screenDestinationRect!.top, _screenDestinationRect!.bottom)
-              .toDouble(),
+          focalPoint.dx.clamp(_screenDestinationRect!.left, _screenDestinationRect!.right).toDouble(),
+          focalPoint.dy.clamp(_screenDestinationRect!.top, _screenDestinationRect!.bottom).toDouble(),
         );
 
         _screenDestinationRect = Rect.fromLTWH(
-            focalPoint.dx -
-                (focalPoint.dx - _screenDestinationRect!.left) * scaleDelta,
-            focalPoint.dy -
-                (focalPoint.dy - _screenDestinationRect!.top) * scaleDelta,
+            focalPoint.dx - (focalPoint.dx - _screenDestinationRect!.left) * scaleDelta,
+            focalPoint.dy - (focalPoint.dy - _screenDestinationRect!.top) * scaleDelta,
             _screenDestinationRect!.width * scaleDelta,
             _screenDestinationRect!.height * scaleDelta);
 
@@ -163,8 +168,7 @@ class EditActionDetails {
     final double width = rect.width * totalScale;
     final double height = rect.height * totalScale;
     final Offset center = rect.center;
-    return Rect.fromLTWH(
-        center.dx - width / 2.0, center.dy - height / 2.0, width, height);
+    return Rect.fromLTWH(center.dx - width / 2.0, center.dy - height / 2.0, width, height);
   }
 
   /// The path of the processed image, displayed on the screen
@@ -210,8 +214,7 @@ class EditActionDetails {
   }
 
   Matrix4 getTransform({Offset? center}) {
-    final Offset origin =
-        center ?? _layoutRect?.center ?? _screenDestinationRect!.center;
+    final Offset origin = center ?? _layoutRect?.center ?? _screenDestinationRect!.center;
     final Matrix4 result = Matrix4.identity();
 
     result.translate(
@@ -345,15 +348,12 @@ class EditActionDetails {
         contains++;
         continue;
       }
-      final List<Offset> list =
-          getLineRectIntersections(rect, element, cropRectCenter);
+      final List<Offset> list = getLineRectIntersections(rect, element, cropRectCenter);
       if (list.isNotEmpty) {
         scaleDelta = min(
             scaleDelta,
-            sqrt(pow(list[0].dx - cropRectCenter.dx, 2) +
-                    pow(list[0].dy - cropRectCenter.dy, 2)) /
-                sqrt(pow(element.dx - cropRectCenter.dx, 2) +
-                    pow(element.dy - cropRectCenter.dy, 2)));
+            sqrt(pow(list[0].dx - cropRectCenter.dx, 2) + pow(list[0].dy - cropRectCenter.dy, 2)) /
+                sqrt(pow(element.dx - cropRectCenter.dx, 2) + pow(element.dy - cropRectCenter.dy, 2)));
       }
     }
     if (contains == 4 || scaleDelta == double.maxFinite) {
@@ -368,10 +368,8 @@ class EditActionDetails {
     if (rotationYRadians == pi) {
       dx = -dx;
     }
-    final double transformedDx =
-        dx * cos(rotateRadians) + dy * sin(rotateRadians);
-    final double transformedDy =
-        dy * cos(rotateRadians) - dx * sin(rotateRadians);
+    final double transformedDx = dx * cos(rotateRadians) + dy * sin(rotateRadians);
+    final double transformedDy = dy * cos(rotateRadians) - dx * sin(rotateRadians);
 
     Offset offset = Offset(transformedDx, transformedDy);
     Rect rect = _screenDestinationRect!.shift(offset);
@@ -432,19 +430,13 @@ class EditActionDetails {
     Offset focalPoint = screenFocalPoint ?? _screenDestinationRect!.center;
 
     focalPoint = Offset(
-      focalPoint.dx
-          .clamp(_screenDestinationRect!.left, _screenDestinationRect!.right)
-          .toDouble(),
-      focalPoint.dy
-          .clamp(_screenDestinationRect!.top, _screenDestinationRect!.bottom)
-          .toDouble(),
+      focalPoint.dx.clamp(_screenDestinationRect!.left, _screenDestinationRect!.right).toDouble(),
+      focalPoint.dy.clamp(_screenDestinationRect!.top, _screenDestinationRect!.bottom).toDouble(),
     );
 
     Rect rect = Rect.fromLTWH(
-        focalPoint.dx -
-            (focalPoint.dx - _screenDestinationRect!.left) * scaleDelta,
-        focalPoint.dy -
-            (focalPoint.dy - _screenDestinationRect!.top) * scaleDelta,
+        focalPoint.dx - (focalPoint.dx - _screenDestinationRect!.left) * scaleDelta,
+        focalPoint.dy - (focalPoint.dy - _screenDestinationRect!.top) * scaleDelta,
         _screenDestinationRect!.width * scaleDelta,
         _screenDestinationRect!.height * scaleDelta);
     bool fixed = false;
@@ -527,10 +519,8 @@ class EditActionDetails {
     final double s2X = p4.dx - p3.dx;
     final double s2Y = p4.dy - p3.dy;
 
-    final double s = (-s1Y * (p1.dx - p3.dx) + s1X * (p1.dy - p3.dy)) /
-        (-s2X * s1Y + s1X * s2Y);
-    final double t = (s2X * (p1.dy - p3.dy) - s2Y * (p1.dx - p3.dx)) /
-        (-s2X * s1Y + s1X * s2Y);
+    final double s = (-s1Y * (p1.dx - p3.dx) + s1X * (p1.dy - p3.dy)) / (-s2X * s1Y + s1X * s2Y);
+    final double t = (s2X * (p1.dy - p3.dy) - s2Y * (p1.dx - p3.dx)) / (-s2X * s1Y + s1X * s2Y);
 
     if (s >= 0 && s <= 1 && t >= 0 && t <= 1) {
       final double intersectionX = p1.dx + (t * s1X);
@@ -554,20 +544,17 @@ class EditActionDetails {
       intersections.add(topIntersection);
     }
 
-    final Offset? bottomIntersection =
-        getIntersection(p1, p2, bottomLeft, bottomRight);
+    final Offset? bottomIntersection = getIntersection(p1, p2, bottomLeft, bottomRight);
     if (bottomIntersection != null) {
       intersections.add(bottomIntersection);
     }
 
-    final Offset? leftIntersection =
-        getIntersection(p1, p2, topLeft, bottomLeft);
+    final Offset? leftIntersection = getIntersection(p1, p2, topLeft, bottomLeft);
     if (leftIntersection != null) {
       intersections.add(leftIntersection);
     }
 
-    final Offset? rightIntersection =
-        getIntersection(p1, p2, topRight, bottomRight);
+    final Offset? rightIntersection = getIntersection(p1, p2, topRight, bottomRight);
     if (rightIntersection != null) {
       intersections.add(rightIntersection);
     }
