@@ -42,7 +42,7 @@ class MyApp extends StatelessWidget {
         w = Stack(
           children: <Widget>[
             Positioned.fill(child: w!),
-            if (kDebugMode) MemoryUsageView(),
+            //if (kDebugMode) MemoryUsageView(),
           ],
         );
         if (!kIsWeb) {
