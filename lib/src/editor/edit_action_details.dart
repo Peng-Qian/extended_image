@@ -471,46 +471,44 @@ class EditActionDetails {
   }
 
   Rect updateCropRect(Rect cropRect) {
-    // 将 cropRect 转换到屏幕坐标
+    // 将裁剪框转换到屏幕坐标
     final Rect screenCropRect = cropRect.shift(layoutTopLeft!);
 
-    // 获取目标矩形
+    // 获取旋转后的图像矩形顶点
     final Rect imageRect = _screenDestinationRect!;
+    final List<Offset> imageVertices = <Offset>[
+      imageRect.topLeft,
+      imageRect.topRight,
+      imageRect.bottomRight,
+      imageRect.bottomLeft,
+    ];
 
-    // 获取裁剪矩形的四个顶点
-    final List<Offset> rectVertices = <Offset>[
+    // 获取旋转后的图像边界
+    final Matrix4 transformMatrix = getTransform();
+    final List<Offset> rotatedImageVertices = imageVertices.map((Offset vertex) {
+      final Vector4 vector = Vector4(vertex.dx, vertex.dy, 0.0, 1.0);
+      final Vector4 transformed = transformMatrix.transform(vector);
+      return Offset(transformed.x, transformed.y);
+    }).toList();
+
+    // 使用旋转后的图像顶点创建一个路径，表示旋转后的图像区域
+    final Path rotatedImagePath = Path()..addPolygon(rotatedImageVertices, true);
+
+    // 检查裁剪框是否完全在图片范围内
+    final List<Offset> cropVertices = <Offset>[
       screenCropRect.topLeft,
       screenCropRect.topRight,
       screenCropRect.bottomRight,
       screenCropRect.bottomLeft,
     ];
 
-    // 遍历每个顶点并限制到目标矩形边界内
-    final List<Offset> constrainedVertices = rectVertices.map((Offset vertex) {
-      return Offset(
-        vertex.dx.clamp(imageRect.left, imageRect.right), // 限制 X 坐标
-        vertex.dy.clamp(imageRect.top, imageRect.bottom), // 限制 Y 坐标
-      );
-    }).toList();
+    final bool isInside = cropVertices.every((Offset vertex) => rotatedImagePath.contains(vertex)); // 判断所有顶点是否都在图片内
 
-    // 使用限制后的顶点计算新的裁剪矩形
-    final Rect constrainedRect = Rect.fromPoints(
-      constrainedVertices.reduce(
-        (Offset a, Offset b) => Offset(
-          min(a.dx, b.dx),
-          min(a.dy, b.dy),
-        ),
-      ),
-      constrainedVertices.reduce(
-        (Offset a, Offset b) => Offset(
-          max(a.dx, b.dx),
-          max(a.dy, b.dy),
-        ),
-      ),
-    );
-
-    // 将裁剪矩形从屏幕坐标转换回局部坐标
-    return constrainedRect.shift(-layoutTopLeft!);
+    if (!isInside) {
+      return this.cropRect!;
+    } else {
+      return cropRect;
+    }
   }
 
   Offset? getIntersection(Offset p1, Offset p2, Offset p3, Offset p4) {
