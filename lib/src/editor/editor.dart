@@ -730,7 +730,7 @@ class ExtendedImageEditorState extends State<ExtendedImageEditor>
     _editActionDetails?.cropRect = null;
     // re-init crop rect
     Rect layoutRect = Offset.zero & _editActionDetails!.layoutRect!.size;
-    final ui.Rect sreenImageRect =
+    final ui.Rect screenImageRect =
         _editActionDetails!.getImagePath().getBounds();
 
     layoutRect = _getNewCropRect(
@@ -738,7 +738,7 @@ class ExtendedImageEditorState extends State<ExtendedImageEditor>
       context,
       autoScale: false,
       initCropRectType:
-          _editActionDetails!.layoutRect!.containsRect(sreenImageRect)
+          _editActionDetails!.layoutRect!.containsRect(screenImageRect)
               ? InitCropRectType.imageRect
               : InitCropRectType.layoutRect,
     );
