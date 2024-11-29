@@ -237,12 +237,12 @@ class EditActionDetails {
     return rotationYRadians == 0 ? rotateRadians : -rotateRadians;
   }
 
-  void updateRotateRadians(double rotateRadians, double maxScale) {
+  void updateRotateRadians(double rotateRadians, double maxScale, {bool zoomInOnly = false}) {
     this.rotateRadians = rotateRadians;
-    scaleToFitRect(maxScale);
+    scaleToFitRect(maxScale, zoomInOnly: zoomInOnly);
   }
 
-  void scaleToFitRect(double maxScale) {
+  void scaleToFitRect(double maxScale, {bool zoomInOnly = false}) {
     double scaleDelta = scaleToFitCropRect();
 
     if (scaleDelta > 0) {
@@ -263,7 +263,7 @@ class EditActionDetails {
         } else {
           updateDelta(Offset.zero);
         }
-      } else {
+      } else if ((zoomInOnly && scaleDelta > 1.0) || !zoomInOnly) {
         screenFocalPoint = null;
         preTotalScale = totalScale;
         totalScale = totalScale * scaleDelta;
