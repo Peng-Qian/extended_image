@@ -118,7 +118,7 @@ class _ImageEditorDemoState extends State<ImageEditorDemo> {
                 initEditorConfigHandler: (ExtendedImageState? state) {
                   return EditorConfig(
                     maxScale: 8.0,
-                    cropRectPadding: const EdgeInsets.all(20.0),
+                    cropRectPadding: const EdgeInsets.only(left: 20.0, right: 20.0, top: 10, bottom: 50),
                     hitTestSize: 20.0,
                     cropLayerPainter: _cropLayerPainter.value,
                     initCropRectType: InitCropRectType.imageRect,
