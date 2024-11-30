@@ -144,15 +144,13 @@ void paintExtendedImage(
 
   Offset? sliceBorder;
   if (centerSlice != null) {
-    sliceBorder = Offset(centerSlice.left + inputSize.width - centerSlice.right,
-        centerSlice.top + inputSize.height - centerSlice.bottom);
+    sliceBorder = Offset(centerSlice.left + inputSize.width - centerSlice.right, centerSlice.top + inputSize.height - centerSlice.bottom);
     outputSize = outputSize - sliceBorder as Size;
     inputSize = inputSize - sliceBorder as Size;
   }
   fit ??= centerSlice == null ? BoxFit.scaleDown : BoxFit.fill;
   assert(centerSlice == null || (fit != BoxFit.none && fit != BoxFit.cover));
-  final FittedSizes fittedSizes =
-      applyBoxFit(fit, inputSize / scale, outputSize);
+  final FittedSizes fittedSizes = applyBoxFit(fit, inputSize / scale, outputSize);
   final Size sourceSize = fittedSizes.source * scale;
   Size destinationSize = fittedSizes.destination;
   if (centerSlice != null) {
@@ -160,8 +158,7 @@ void paintExtendedImage(
     destinationSize += sliceBorder;
     // We don't have the ability to draw a subset of the image at the same time
     // as we apply a nine-patch stretch.
-    assert(sourceSize == inputSize,
-        'centerSlice was used with a BoxFit that does not guarantee that the image is fully visible.');
+    assert(sourceSize == inputSize, 'centerSlice was used with a BoxFit that does not guarantee that the image is fully visible.');
   }
   if (repeat != ImageRepeat.noRepeat && destinationSize == outputSize) {
     // There's no need to repeat the image because we're exactly filling the
@@ -175,12 +172,9 @@ void paintExtendedImage(
   paint.color = Color.fromRGBO(0, 0, 0, opacity);
   paint.filterQuality = filterQuality;
   paint.invertColors = invertColors;
-  final double halfWidthDelta =
-      (outputSize.width - destinationSize.width) / 2.0;
-  final double halfHeightDelta =
-      (outputSize.height - destinationSize.height) / 2.0;
-  final double dx = halfWidthDelta +
-      (flipHorizontally ? -alignment.x : alignment.x) * halfWidthDelta;
+  final double halfWidthDelta = (outputSize.width - destinationSize.width) / 2.0;
+  final double halfHeightDelta = (outputSize.height - destinationSize.height) / 2.0;
+  final double dx = halfWidthDelta + (flipHorizontally ? -alignment.x : alignment.x) * halfWidthDelta;
   final double dy = halfHeightDelta + alignment.y * halfHeightDelta;
   final Offset destinationPosition = topLeft.translate(dx, dy);
   Rect destinationRect = destinationPosition & destinationSize;
@@ -188,8 +182,7 @@ void paintExtendedImage(
   bool needClip = false;
 
   if (gestureDetails != null) {
-    destinationRect =
-        gestureDetails.calculateFinalDestinationRect(rect, destinationRect);
+    destinationRect = gestureDetails.calculateFinalDestinationRect(rect, destinationRect);
 
     // outside and need clip
     needClip = !rect.containsRect(destinationRect);
@@ -261,25 +254,21 @@ void paintExtendedImage(
   }
 
   if (centerSlice == null) {
-    final Rect sourceRect = customSourceRect ??
-        alignment.inscribe(sourceSize, Offset.zero & inputSize);
+    final Rect sourceRect = customSourceRect ?? alignment.inscribe(sourceSize, Offset.zero & inputSize);
     if (repeat == ImageRepeat.noRepeat) {
       canvas.drawImageRect(image, sourceRect, destinationRect, paint);
     } else {
-      for (final Rect tileRect
-          in _generateImageTileRects(rect, destinationRect, repeat))
+      for (final Rect tileRect in _generateImageTileRects(rect, destinationRect, repeat)) {
         canvas.drawImageRect(image, sourceRect, tileRect, paint);
+      }
     }
   } else {
     canvas.scale(1 / scale);
     if (repeat == ImageRepeat.noRepeat) {
-      canvas.drawImageNine(image, _scaleRect(centerSlice, scale),
-          _scaleRect(destinationRect, scale), paint);
+      canvas.drawImageNine(image, _scaleRect(centerSlice, scale), _scaleRect(destinationRect, scale), paint);
     } else {
-      for (final Rect tileRect
-          in _generateImageTileRects(rect, destinationRect, repeat))
-        canvas.drawImageNine(image, _scaleRect(centerSlice, scale),
-            _scaleRect(tileRect, scale), paint);
+      for (final Rect tileRect in _generateImageTileRects(rect, destinationRect, repeat))
+        canvas.drawImageNine(image, _scaleRect(centerSlice, scale), _scaleRect(tileRect, scale), paint);
     }
   }
 
@@ -305,8 +294,7 @@ void paintExtendedImage(
   }
 }
 
-List<Rect> _generateImageTileRects(
-    Rect outputRect, Rect fundamentalRect, ImageRepeat repeat) {
+List<Rect> _generateImageTileRects(Rect outputRect, Rect fundamentalRect, ImageRepeat repeat) {
   int startX = 0;
   int startY = 0;
   int stopX = 0;
@@ -326,10 +314,8 @@ List<Rect> _generateImageTileRects(
 
   return <Rect>[
     for (int i = startX; i <= stopX; ++i)
-      for (int j = startY; j <= stopY; ++j)
-        fundamentalRect.shift(Offset(i * strideX, j * strideY)),
+      for (int j = startY; j <= stopY; ++j) fundamentalRect.shift(Offset(i * strideX, j * strideY)),
   ];
 }
 
-Rect _scaleRect(Rect rect, double scale) => Rect.fromLTRB(rect.left * scale,
-    rect.top * scale, rect.right * scale, rect.bottom * scale);
+Rect _scaleRect(Rect rect, double scale) => Rect.fromLTRB(rect.left * scale, rect.top * scale, rect.right * scale, rect.bottom * scale);
