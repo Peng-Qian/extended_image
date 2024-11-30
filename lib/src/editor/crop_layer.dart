@@ -108,6 +108,7 @@ class ExtendedImageCropLayerState extends State<ExtendedImageCropLayer> with Sin
         maskColor: maskColor,
         pointerDown: _pointerDown,
         rotateRadians: _rotateRadians,
+        cropRectPadding: widget.editActionDetails.cropRectPadding,
       ),
       child: IgnorePointer(
         ignoring: _rectTweenController.isAnimating,

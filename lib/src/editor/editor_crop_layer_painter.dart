@@ -179,6 +179,7 @@ class ExtendedImageCropLayerPainter extends CustomPainter {
     required this.maskColor,
     required this.pointerDown,
     required this.rotateRadians,
+    this.cropRectPadding,
   });
 
   /// The rectangle defining the crop area
@@ -208,6 +209,8 @@ class ExtendedImageCropLayerPainter extends CustomPainter {
   /// The rotation angle of the crop area (in radians)
   final double rotateRadians;
 
+  final EdgeInsets? cropRectPadding;
+
   @override
   void paint(Canvas canvas, Size size) {
     Rect rect = Offset.zero & size;
@@ -219,15 +222,23 @@ class ExtendedImageCropLayerPainter extends CustomPainter {
       // Calculate the rotation origin (center of the canvas)
       final Offset origin = rect.center;
       final Matrix4 result = Matrix4.identity();
+      final EdgeInsets? padding = cropRectPadding;
 
-      result.translate(
-        origin.dx,
-        origin.dy,
-      );
+      // 计算实际的旋转中心（考虑 padding 偏移）
+      double adjustedOriginX = origin.dx;
+      double adjustedOriginY = origin.dy;
+      if (padding != null) {
+        adjustedOriginX += (padding.left - padding.right) / 2;
+        adjustedOriginY += (padding.top - padding.bottom) / 2;
+      }
+
+      // 平移到调整后的旋转中心
+      result.translate(adjustedOriginX, adjustedOriginY);
 
       result.multiply(Matrix4.rotationZ(rotateRadians));
 
-      result.translate(-origin.dx, -origin.dy);
+      // 逆平移回原始位置
+      result.translate(-adjustedOriginX, -adjustedOriginY);
 
       // Apply the transformation matrix
       canvas.transform(result.storage);

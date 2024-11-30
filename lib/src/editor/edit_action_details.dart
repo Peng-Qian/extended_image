@@ -216,11 +216,18 @@ class EditActionDetails {
   Matrix4 getTransform({Offset? center}) {
     final Offset origin = center ?? _layoutRect?.center ?? _screenDestinationRect!.center;
     final Matrix4 result = Matrix4.identity();
+    final EdgeInsets? padding = cropRectPadding;
+    // 计算实际的旋转中心（考虑 padding 偏移）
+    double adjustedOriginX = origin.dx;
+    double adjustedOriginY = origin.dy;
+    if (padding != null) {
+      adjustedOriginX += (padding.left - padding.right) / 2;
+      adjustedOriginY += (padding.top - padding.bottom) / 2;
+    }
 
-    result.translate(
-      origin.dx,
-      origin.dy,
-    );
+    // 平移到调整后的旋转中心
+    result.translate(adjustedOriginX, adjustedOriginY);
+
     if (rotationYRadians != 0) {
       result.multiply(Matrix4.rotationY(rotationYRadians));
     }
@@ -228,7 +235,8 @@ class EditActionDetails {
       result.multiply(Matrix4.rotationZ(rotateRadians));
     }
 
-    result.translate(-origin.dx, -origin.dy);
+    // 逆平移回原始位置
+    result.translate(-adjustedOriginX, -adjustedOriginY);
 
     return result;
   }
