@@ -56,7 +56,7 @@ class ExtendedImageCropLayerState extends State<ExtendedImageCropLayer> with Sin
   Animation<Rect?>? _rectAnimation;
   late AnimationController _rectTweenController;
   _MoveType? _currentMoveType;
-  bool _lazyScale = false;
+  bool _zoomInOnly = false;
 
   double _rotateRadians = 0;
 
@@ -79,7 +79,9 @@ class ExtendedImageCropLayerState extends State<ExtendedImageCropLayer> with Sin
     super.didUpdateWidget(oldWidget);
     if (widget.editorConfig.animationDuration != oldWidget.editorConfig.animationDuration) {
       _rectTweenController.stop();
-      _rectTweenController.dispose();
+      _rectTweenController
+        ..removeListener(_doCropAutoCenterAnimation)
+        ..dispose();
       _rectTweenController = AnimationController(vsync: this, duration: widget.editorConfig.animationDuration)..addListener(_doCropAutoCenterAnimation);
     }
   }
@@ -495,9 +497,9 @@ class ExtendedImageCropLayerState extends State<ExtendedImageCropLayer> with Sin
     final Rect newScreenCropRect = centerCropRect.shift(widget.editActionDetails.layoutTopLeft!);
 
     _rectAnimation = _rectTweenController.drive<Rect?>(RectTween(begin: oldScreenCropRect, end: newScreenCropRect));
-    _lazyScale = true;
+    _zoomInOnly = true;
     _rectTweenController.reset();
-    _rectTweenController.forward().then((_) => _lazyScale = false);
+    _rectTweenController.forward().then((_) => _zoomInOnly = false);
   }
 
   void _doCropAutoCenterAnimation({Rect? newScreenCropRect}) {
@@ -507,10 +509,9 @@ class ExtendedImageCropLayerState extends State<ExtendedImageCropLayer> with Sin
         final Rect oldScreenDestinationRect = widget.editActionDetails.screenDestinationRect!;
 
         newScreenCropRect ??= _rectAnimation!.value;
-
+        cropRect = newScreenCropRect!.shift(-widget.editActionDetails.layoutTopLeft!);
         late final double scale;
-        if (_lazyScale) {
-          cropRect = newScreenCropRect!.shift(-widget.editActionDetails.layoutTopLeft!);
+        if (_zoomInOnly) {
           scale = max(1, widget.editActionDetails.scaleToFitCropRect());
         } else {
           scale = newScreenCropRect!.width / oldScreenCropRect.width;
@@ -549,12 +550,15 @@ class ExtendedImageCropLayerState extends State<ExtendedImageCropLayer> with Sin
         // new image rect
         final Rect newScreenDestinationRect = Rect.fromPoints(list[0], list[2]);
 
-        cropRect = newScreenCropRect!.shift(-widget.editActionDetails.layoutTopLeft!);
-
         final double totalScale = widget.editActionDetails.totalScale * scale;
         widget.editActionDetails.setScreenDestinationRect(newScreenDestinationRect);
         widget.editActionDetails.totalScale = totalScale;
         widget.editActionDetails.preTotalScale = totalScale;
+
+        // if aspect ratio trigger the animation, scale to fit rect again.
+        if (_zoomInOnly) {
+          widget.editActionDetails.scaleToFitRect(widget.editorConfig.maxScale);
+        }
 
         if (_rectTweenController.isCompleted) {
           widget.cropAutoCenterAnimationIsCompleted();
