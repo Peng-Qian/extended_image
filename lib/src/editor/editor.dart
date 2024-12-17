@@ -82,6 +82,7 @@ class ExtendedImageEditorState extends State<ExtendedImageEditor> with SingleTic
       _updateRotate(
         _rotationYRadiansAnimation?.value ?? _editActionDetails!.rotationYRadians,
         _rotateRadiansAnimation?.value ?? _editActionDetails!.rotateRadians,
+        zoomInOnly: _rotationYRadiansAnimation != null, // use zoomInOnly when flip trigger the animation to avoid scale down on Flip
       );
     }
 
@@ -535,7 +536,7 @@ class ExtendedImageEditorState extends State<ExtendedImageEditor> with SingleTic
       _layerKey.currentState?.pointerDown(true);
       _animationController.forward(from: 0);
     } else {
-      _updateRotate(end, _editActionDetails!.rotateRadians);
+      _updateRotate(end, _editActionDetails!.rotateRadians, zoomInOnly: true);
       _saveCurrentState();
     }
   }
